@@ -79,52 +79,107 @@ function confirmReset() {
 }
 
 
-
-function uploadFirmware()
+function crc32(buf)
 {
+    let crc = 0xFFFFFFFF;
+    for(let i = 0 ; i < buf.length ; i++)
+    {
+        crc ^= buf[i];
+        for (let j = 0; j < 8; j++) {
+            crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+        }
+    }
+
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+
+
+/**
+ * Helper function to calculate CRC32 of a buffer
+ * Standard Polynomial: 0xEDB88320
+ */
+function calculateCRC32(buffer) {
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < buffer.length; i++) {
+        crc ^= buffer[i];
+        for (let j = 0; j < 8; j++) {
+            crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+        }
+    }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+/**
+ * Main Firmware Upload Function
+ */
+function uploadFirmware() {
     const fileInput = document.getElementById('fileInput');
     const progressBar = document.getElementById('uploadProgressBar');
     const progressContainer = document.getElementById('uploadProgressContainer');
     const statusText = document.getElementById('uploadStatus');
 
     if (fileInput.files.length === 0) {
-        alert(".bin file is not choosen!");
+        alert("Error: No .bin file selected!");
         return;
     }
 
     const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
+    const reader = new FileReader();
 
+    // 1. Show UI elements and reset progress
     progressContainer.style.display = 'block';
     progressBar.style.width = '0%';
-    statusText.innerText = "Uploading...";
+    statusText.style.color = "#c5c6c7"; // Default color
+    statusText.innerText = "Reading file for CRC calculation...";
 
+    // 2. Read the file to calculate CRC before sending
+    reader.onload = function(e) {
+        const buffer = new Uint8Array(e.target.result);
+        const fileCrc = calculateCRC32(buffer);
+        const crcHex = fileCrc.toString(16).toUpperCase();
 
-    xhr.uplod.addEventListener("progress" , (e) => {
-        if (e.lengthComputable) {
-            const percent = (e.loaded / e.total) * 100;
-            progressBar.style.width = percent + "%";
-            statusText.innerText = `Uploading: %${Math.round(percent)}`;
-        }
-    })
+        console.log(`[GCS] File: ${file.name} | CRC32: 0x${crcHex}`);
 
+        // 3. Prepare XHR and FormData
+        const xhr = new XMLHttpRequest();
+        const formData = new FormData();
+        formData.append("file", file);
 
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                statusText.innerText = "Uploaded to ESP , going to STM...";
-                statusText.style.color = "#00ff00";
-            } else {
-                statusText.innerText = "Error: File not uploaded!";
-                statusText.style.color = "#ff0000";
+        // Upload progress listener
+        xhr.upload.addEventListener("progress", (e) => {
+            if (e.lengthComputable) {
+                const percent = (e.loaded / e.total) * 100;
+                progressBar.style.width = percent + "%";
+                statusText.innerText = `Uploading to ESP: %${Math.round(percent)}`;
             }
-        }
+        });
+
+        // Response handler
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    statusText.innerText = "SUCCESS: Uploaded to ESP. Transferring to STM32...";
+                    statusText.style.color = "#00ff00";
+                    console.log("[GCS] ESP response: " + xhr.responseText);
+                } else {
+                    statusText.innerText = `ERROR: Upload failed! (Status: ${xhr.status})`;
+                    statusText.style.color = "#ff0000";
+                    console.error("[GCS] Upload failed.");
+                }
+            }
+        };
+
+        // 4. Send request with CRC in custom header
+        xhr.open("POST", "/upload_firmware", true);
+        xhr.setRequestHeader("X-File-CRC", crcHex); // ESP32 will use this to verify the file
+        xhr.send(formData);
     };
 
-    //  (ESP32'nin IP'si ve endpointi)
-    xhr.open("POST", "/upload_firmware", true);
-    xhr.send(formData);
+    reader.onerror = function() {
+        statusText.innerText = "Error: Could not read file!";
+        statusText.style.color = "#ff0000";
+    };
+
+    reader.readAsArrayBuffer(file);
 }
-
-
