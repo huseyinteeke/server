@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SARA | Command Center</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/chart.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="gcs-container">
+        <aside class="sidebar">
+            <h1>SARA GCS</h1>
+            <div id="status-box" class="status-safe">DISARMED</div>
+            
+            <div class="control-group">
+                <button class="btn btn-arm" onclick="sendCommand('ARM')">ARM</button>
+                <button class="btn btn-disarm" onclick="sendCommand('DISARM')">DISARM</button>
+                <button class="btn btn-log" onclick="window.location.href='/download_logs'">DOWNLOAD LOG</button>
+            </div>
+
+            <div class="pid-panel">
+                <h3>PID & SETPOINT</h3>
+                <input type="number" id="sp_pitch" placeholder="Pitch Setpoint">
+                <input type="number" id="kp_pitch" placeholder="Pitch Kp">
+                <input type="number" id="ki_pitch" placeholder="Pitch Ki">
+                <input type="number" id="kd_pitch" placeholder="Pitch Kd">
+                <hr>
+                <input type="number" id="sp_yaw" placeholder="Yaw Setpoint">
+                <input type="number" id="kp_yaw" placeholder="Yaw Kp">
+                <input type="number" id="ki_yaw" placeholder="Yaw Ki">
+                <input type="number" id="kd_yaw" placeholder="Yaw Kd">
+                <button class="btn btn-update" onclick="sendPID()">UPDATE PARAMS</button>
+            </div>
+
+            <div class="fota-panel">
+                <h3>FIRMWARE (FOTA)</h3>
+                <form action="/upload_firmware" method="post" enctype="multipart/form-data">
+                    <input type="file" name="file" accept=".bin">
+                    <button type="submit" class="btn btn-fota">FLASH BINARY</button>
+                </form>
+            </div>
+        </aside>
+
+        <main class="charts-grid">
+            <div class="chart-container"><h4>Depth</h4><canvas id="chart_Depth"></canvas></div>
+            <div class="chart-container"><h4>Acc X</h4><canvas id="chart_Ax"></canvas></div>
+            <div class="chart-container"><h4>Acc Y</h4><canvas id="chart_Ay"></canvas></div>
+            <div class="chart-container"><h4>Acc Z</h4><canvas id="chart_Az"></canvas></div>
+            <div class="chart-container"><h4>Pitch</h4><canvas id="chart_pitch"></canvas></div>
+            <div class="chart-container"><h4>Roll</h4><canvas id="chart_roll"></canvas></div>
+            <div class="chart-container"><h4>Yaw</h4><canvas id="chart_yaw"></canvas></div>
+            <div class="chart-container"><h4>Velocity</h4><canvas id="chart_velocity"></canvas></div>
+            <div class="chart-container"><h4>Distance</h4><canvas id="chart_distance"></canvas></div>
+        </main>
+    </div>
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
