@@ -13,9 +13,10 @@
             <h1>SARA GCS</h1>
             <div id="status-box" class="status-safe">DISARMED</div>
             
-            <div class="control-group">
+            <<div class="control-group">
                 <button class="btn btn-arm" onclick="sendCommand('ARM')">ARM</button>
                 <button class="btn btn-disarm" onclick="sendCommand('DISARM')">DISARM</button>
+                <button class="btn btn-reset" onclick="confirmReset()">SYSTEM RESET</button> 
                 <button class="btn btn-log" onclick="window.location.href='/download_logs'">DOWNLOAD LOG</button>
             </div>
 
@@ -35,10 +36,15 @@
 
             <div class="fota-panel">
                 <h3>FIRMWARE (FOTA)</h3>
-                <form action="/upload_firmware" method="post" enctype="multipart/form-data">
-                    <input type="file" name="file" accept=".bin">
-                    <button type="submit" class="btn btn-fota">FLASH BINARY</button>
-                </form>
+                <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" name="file" id="fileInput" accept=".bin" class="file-input">
+                <button type="button" class="btn btn-fota" onclick="uploadFirmware()">FLASH BINARY</button>
+            </form>
+            <div id="uploadProgressContainer" style="display:none; margin-top:10px;">
+                <div style="width:100%; background:#000; border:1px solid #45a29e; height:10px; border-radius:5px;">
+                    <div id="uploadProgressBar" style="width:0%; height:100%; background:#ffc107; transition:0.2s;"></div>
+                </div>
+                <small id="uploadStatus" style="font-size:0.7rem; color:#45a29e;"></small>
             </div>
         </aside>
 

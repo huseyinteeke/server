@@ -68,3 +68,63 @@ function updateStatusBox(armed) {
     box.innerText = armed ? "ARMED" : "DISARMED";
     box.className = armed ? "status-danger" : "status-safe";
 }
+
+
+
+function confirmReset() {
+    if (confirm("Are you sure?")) {
+        console.log("[JS] Reset sending...");
+        socket.emit('ui_command', { action: 'RESET' });
+    }
+}
+
+
+
+function uploadFirmware()
+{
+    const fileInput = document.getElementById('fileInput');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const progressContainer = document.getElementById('uploadProgressContainer');
+    const statusText = document.getElementById('uploadStatus');
+
+    if (fileInput.files.length === 0) {
+        alert(".bin file is not choosen!");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    statusText.innerText = "Uploading...";
+
+
+    xhr.uplod.addEventListener("progress" , (e) => {
+        if (e.lengthComputable) {
+            const percent = (e.loaded / e.total) * 100;
+            progressBar.style.width = percent + "%";
+            statusText.innerText = `Uploading: %${Math.round(percent)}`;
+        }
+    })
+
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                statusText.innerText = "Uploaded to ESP , going to STM...";
+                statusText.style.color = "#00ff00";
+            } else {
+                statusText.innerText = "Error: File not uploaded!";
+                statusText.style.color = "#ff0000";
+            }
+        }
+    };
+
+    //  (ESP32'nin IP'si ve endpointi)
+    xhr.open("POST", "/upload_firmware", true);
+    xhr.send(formData);
+}
+
+

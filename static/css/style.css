@@ -49,4 +49,19 @@ canvas { flex: 1; width: 100% !important; height: 100% !important; }
 .status-safe { color: #00ff00; border: 1px solid #00ff00; background: rgba(0,255,0,0.1); }
 .status-danger { color: #ff0000; border: 1px solid #ff0000; background: rgba(255,0,0,0.1); animation: blink 1s infinite; }
 
+.btn-reset { 
+    background: #ff4e00; 
+    color: white; 
+    box-shadow: 0 0 10px rgba(255, 78, 0, 0.2);
+}
+
+.btn-reset:hover { 
+    background: #ff6a00; 
+    box-shadow: 0 0 15px rgba(255, 78, 0, 0.4);
+    opacity: 1;
+}
+
+.btn-fota { background: #ffc107; color: #000; }
+
+
 @keyframes blink { 50% { opacity: 0.5; } }
