@@ -171,8 +171,11 @@ function uploadFirmware() {
         };
 
         // 4. Send request with CRC in custom header
-        xhr.open("POST", "/upload_firmware", true);
-        xhr.setRequestHeader("X-File-CRC", crcHex); // ESP32 will use this to verify the file
+        const ESP_IP = "10.172.218.100"; 
+        const targetUrl = `http://${ESP_IP}/upload_firmware`; 
+        console.log("[GCS] Hedef URL:", targetUrl);
+        xhr.open("POST", targetUrl, true); // Sadece bu satır kalsın
+        xhr.setRequestHeader("X-File-CRC", crcHex);
         xhr.send(formData);
     };
 
