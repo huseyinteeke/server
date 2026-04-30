@@ -79,20 +79,26 @@ function confirmReset() {
 }
 
 
-function crc32(buf)
-{
-    let crc = 0xFFFFFFFF;
-    for(let i = 0 ; i < buf.length ; i++)
-    {
-        crc ^= buf[i];
-        for (let j = 0; j < 8; j++) {
-            crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
-        }
+function crc32(buf) {
+  let table = window.crc32Table;
+  if (!table) {
+    table = [];
+    for (let i = 0; i < 256; i++) {
+      let c = i;
+      for (let j = 0; j < 8; j++) {
+        c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      }
+      table[i] = c;
     }
+    window.crc32Table = table;
+  }
 
-    return (crc ^ 0xFFFFFFFF) >>> 0;
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < buf.length; i++) {
+    crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xFF];
+  }
+  return ((crc ^ 0xFFFFFFFF) >>> 0).toString(16).toUpperCase();
 }
-
 
 
 /**
