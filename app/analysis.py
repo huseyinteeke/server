@@ -32,7 +32,6 @@ def run_post_analysis(file_path):
         plt.title(f"Analiz: {os.path.basename(file_path)}")
         plt.legend()
         
-        # Grafik dosyasını kaydet
         report_path = file_path.replace('.csv', '.png')
         plt.savefig(report_path)
         plt.close()

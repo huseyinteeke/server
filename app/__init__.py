@@ -15,14 +15,13 @@ def create_app():
     
     app.config.from_object(Config)
 
-    # Motoru 'gevent' olarak değiştirdik
     socketio.init_app(app, 
                       cors_allowed_origins="*", 
                       async_mode='gevent',
                       ping_timeout=60,
                       ping_interval=25)
 
-    from .routes import main_bp
+    from .routes import main_bp         
     app.register_blueprint(main_bp)
 
     from .sockets import init_sockets

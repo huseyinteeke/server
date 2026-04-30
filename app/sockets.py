@@ -6,7 +6,7 @@ from .config import Config
 def init_sockets(socketio):
     @socketio.on('telemetry')
     def handle_telemetry(data):
-        # 1. CSV'ye Yaz (Mühendislik Kaydı)
+        
         file_exists = os.path.isfile(Config.LOG_FILE)
         with open(Config.LOG_FILE, mode='a', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=data.keys())

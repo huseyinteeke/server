@@ -16,11 +16,11 @@ def upload_firmware():
     file = request.files['file']
     if file.filename == '': return "No selected file", 400
     
-    # Dosyayı firmware klasörüne kaydet
+    # Dosyayı firmware s kaydet
     path = os.path.join(Config.FIRMWARE_FOLDER, "latest_sara.bin")
     file.save(path)
     
-    # ESP32'ye güncelleme emri gönder (Socket.io üzerinden)
+    # ESP32 (Socket.io üzerinden)
     socketio.emit('device_command', {'action': 'UPDATE_FIRMWARE', 'file': 'latest_sara.bin'})
     return "Firmware uploaded and update command sent!", 200
 
@@ -31,7 +31,6 @@ def download_logs():
         return send_file(Config.LOG_FILE, as_attachment=True)
     return "Log file not found", 404
 
-# HTTP KÖPRÜSÜ (ESP32 WebSocket yerine HTTP kullanırsa)
 @main_bp.route('/data')
 def handle_http_data():
     data = request.args.to_dict()
