@@ -17,9 +17,9 @@
                 <button class="btn btn-arm" onclick="sendCommand('ARM')">ARM</button>
                 <button class="btn btn-disarm" onclick="sendCommand('DISARM')">DISARM</button>
                 <button class="btn btn-reset" onclick="confirmReset()">SYSTEM RESET</button> 
-                <button class="btn btn-log" onclick="window.location.href='/download_logs'">DOWNLOAD LOG</button>
+                <button class="btn btn-log" id="btnDownloadLog" onclick="downloadLogs()">DOWNLOAD OFFLINE LOG</button>
             </div>
-
+            <div id="logStatusText" style="color: #ff9800; font-size: 0.8rem; text-align: center; margin-top: 5px; min-height: 15px;"></div>
             <div class="pid-panel">
                 <h3>PID & SETPOINT</h3>
                 <input type="number" id="sp_pitch" placeholder="Pitch Setpoint">

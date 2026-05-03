@@ -192,3 +192,90 @@ function uploadFirmware() {
 
     reader.readAsArrayBuffer(file);
 }
+
+
+
+
+
+
+//BBOX logic
+
+let offlineLogs = [];
+let isDownloading = false;
+
+
+
+function updateLogStatus(msg) {
+    const statusEl = document.getElementById('logStatusText');
+    if (statusEl) statusEl.innerText = msg;
+    console.log("[BBOX] " + msg);
+}
+
+function downloadAsCSV(dataArray, filename) {
+    if (!dataArray || !dataArray.length) {
+        return;
+    }
+
+    const headers = Object.keys(dataArray[0]);
+    let csvContent = headers.join(",") + "\n";
+
+    dataArray.forEach(row => {
+        let values = headers.map(header => {
+            return row[header] !== undefined ? row[header] : "";
+        });
+        csvContent += values.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
+socket.on('log_data' , (data) => {
+    offlineLogs.push(data);
+    if (offlineLogs.length % 50 === 0) {
+        updateLogStatus(`Downloading... ${offlineLogs.length} packets taken.`);
+    }
+});
+
+
+socket.on('log_status', (status) => {
+    if (status === "Tamamlandı" || status === "Tamamlandi") {
+        updateLogStatus(`Finished. ${offlineLogs.length} packets. CSV preapearing...`);        
+        downloadAsCSV(offlineLogs, "SARA_Offline_Log.csv");
+        
+        isDownloading = false;
+        setTimeout(() => updateLogStatus(""), 4000); 
+        
+    } else if (status === "Buffer boş" || status === "Buffer bos") {
+        updateLogStatus("İndirilecek log bulunamadı (Buffer boş).");
+        isDownloading = false;
+        setTimeout(() => updateLogStatus(""), 4000);
+        
+    } else {
+        updateLogStatus(`Status: ${status}`);
+    }
+});
+
+function downloadLogs()
+{
+    if (isDownloading)
+    {
+        console.log("[BBOX] already download mode");
+        return;
+    }
+
+
+    offlineLogs = [];
+    isDownloading = true;
+    updateLogStatus("Taking Logs");
+    socket.emit('ui_command', { action: "DOWNLOAD" });
+}
