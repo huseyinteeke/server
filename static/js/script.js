@@ -79,46 +79,49 @@ function confirmReset() {
 }
 
 
-function crc32(buf) {
-  let table = window.crc32Table;
-  if (!table) {
-    table = [];
-    for (let i = 0; i < 256; i++) {
-      let c = i;
-      for (let j = 0; j < 8; j++) {
-        c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-      }
-      table[i] = c;
-    }
-    window.crc32Table = table;
-  }
 
-  let crc = 0xFFFFFFFF;
-  for (let i = 0; i < buf.length; i++) {
-    crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xFF];
-  }
-  return ((crc ^ 0xFFFFFFFF) >>> 0).toString(16).toUpperCase();
-}
+
+
 
 
 /**
  * Helper function to calculate CRC32 of a buffer
  * Standard Polynomial: 0xEDB88320
  */
-function calculateCRC32(buffer) {
+
+function calculateFastCRC32(buffer) {
+    let table = window.crc32Table;
+    if (!table) {
+        table = [];
+        for (let i = 0; i < 256; i++) {
+            let c = i;
+            for (let j = 0; j < 8; j++) {
+                c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            }
+            table[i] = c;
+        }
+        window.crc32Table = table;
+    }
+
     let crc = 0xFFFFFFFF;
     for (let i = 0; i < buffer.length; i++) {
-        crc ^= buffer[i];
-        for (let j = 0; j < 8; j++) {
-            crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
-        }
+        crc = (crc >>> 8) ^ table[(crc ^ buffer[i]) & 0xFF];
     }
     return (crc ^ 0xFFFFFFFF) >>> 0;
 }
 
+
+
+
+
+
+
+
+
 /**
  * Main Firmware Upload Function
  */
+/*
 function uploadFirmware() {
     const fileInput = document.getElementById('fileInput');
     const progressBar = document.getElementById('uploadProgressBar');
@@ -177,7 +180,7 @@ function uploadFirmware() {
         };
 
         // 4. Send request with CRC in custom header
-        const ESP_IP = "10.172.218.100"; 
+        const ESP_IP = "10.126.19.100"; 
         const targetUrl = `http://${ESP_IP}/upload_firmware`; 
         console.log("[GCS] Hedef URL:", targetUrl);
         xhr.open("POST", targetUrl, true); // Sadece bu satır kalsın
@@ -192,7 +195,96 @@ function uploadFirmware() {
 
     reader.readAsArrayBuffer(file);
 }
+*/
 
+
+
+
+function uploadFirmware() {
+    console.log("[DEBUG] 1. uploadFirmware fonksiyonu tetiklendi.");
+    
+    const fileInput = document.getElementById('fileInput');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const progressContainer = document.getElementById('uploadProgressContainer');
+    const statusText = document.getElementById('uploadStatus');
+
+    // HTML elemanları gerçekten var mı kontrolü
+    if (!progressContainer || !progressBar || !statusText) {
+        console.error("[DEBUG] HATA: HTML tarafında progress barlarının ID'leri bulunamadı!");
+        return; 
+    }
+
+    if (fileInput.files.length === 0) {
+        alert("Lütfen bir .bin dosyası seçin!");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    console.log(`[DEBUG] 2. Dosya seçildi: ${file.name}`);
+
+    // UI güncellemeleri
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    statusText.style.color = "#c5c6c7"; 
+    statusText.innerText = "Okuma başlatılıyor...";
+
+    const reader = new FileReader();
+
+    // Okuma BAŞARILI olursa buraya girmeli
+    reader.onload = function(e) {
+        console.log("[DEBUG] 4. BİNGÖOO! onload içine başarıyla girildi!");
+        // (Burada CRC ve yükleme işlemleri olacak, şimdilik sadece girip girmediğine bakıyoruz)
+        statusText.innerText = "Dosya başarıyla okundu!";
+    
+    try {
+            const buffer = new Uint8Array(e.target.result);
+            console.log("[DEBUG] 5. Buffer oluşturuldu, uzunluk:", buffer.length);
+
+            // CRC HESAPLAMA TESTİ
+            console.log("[DEBUG] 6. CRC hesaplaması başlıyor...");
+            // Burada eğer calculateCRC32 fonksiyonun hatalıysa kod burada donar
+            const fileCrc = calculateFastCRC32(buffer); 
+            const crcHex = fileCrc.toString(16).toUpperCase();
+            console.log("[DEBUG] 7. CRC hesaplandı:", crcHex);
+
+            // İSTEK HAZIRLAMA
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+            formData.append("file", file);
+            
+            const ESP_IP = "10.126.19.100"; 
+            const targetUrl = `http://${ESP_IP}/upload_firmware`;
+            
+            console.log("[DEBUG] 8. XHR açılıyor, Hedef:", targetUrl);
+            xhr.open("POST", targetUrl, true);
+            xhr.setRequestHeader("X-File-CRC", crcHex);
+            
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    console.log("[DEBUG] 10. Yanıt geldi, Statü:", xhr.status);
+                }
+            };
+
+            console.log("[DEBUG] 9. Dosya gönderiliyor (send)...");
+            xhr.send(formData);
+
+        } catch (err) {
+            console.error("[DEBUG] !!! PATLADIK !!! Hata detayı:", err.message);
+            statusText.innerText = "Hata: " + err.message;
+        }
+    };
+
+    // Okuma BAŞARISIZ olursa buraya girmeli
+    reader.onerror = function(e) {
+        console.error("[DEBUG] 4. HATA! onerror içine girdi. Tarayıcı dosyayı okuyamıyor!");
+        console.error(e);
+        statusText.innerText = "Hata: Dosya kilitli veya bozuk!";
+        statusText.style.color = "#ff0000";
+    };
+
+    console.log("[DEBUG] 3. readAsArrayBuffer fonksiyonu çağrılıyor...");
+    reader.readAsArrayBuffer(file);
+}
 
 
 
