@@ -357,6 +357,40 @@ socket.on('log_status', (status) => {
     }
 });
 
+
+
+function downloadAsCSV(data , filename)
+{
+    if (!data || data.length === 0) return;
+
+
+    const dateStr = new Date().toLocaleDateString('tr-TR');
+    const timeStr = new Date().toLocaleTimeString('tr-TR');
+
+    const headers = "Log_Date,Log_Time," + Object.keys(data[0]).join(",");
+
+    const rows = data.map(obj => {
+        const values = Object.values(obj).join(",");
+        return `${dateStr},${timeStr},${values}`;
+    }).join("\n");
+
+
+
+    const csvContent = headers + "\n" + rows;
+
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+}
+
+
 function downloadLogs()
 {
     if (isDownloading)
@@ -365,6 +399,16 @@ function downloadLogs()
         return;
     }
 
+    const now = new Date();
+    const timestamp = now.getFullYear() + "-" + 
+                      String(now.getMonth() + 1).padStart(2, '0') + "-" + 
+                      String(now.getDate()).padStart(2, '0') + "_" + 
+                      String(now.getHours()).padStart(2, '0') + "-" + 
+                      String(now.getMinutes()).padStart(2, '0') + "-" + 
+                      String(now.getSeconds()).padStart(2, '0');
+    const fileName = `SARA_Log_${timestamp}.csv`;
+    console.log(`[BBOX] Hazırlanıyor: ${fileName}`);
+    downloadAsCSV(offlineLogs , fileName);
 
     offlineLogs = [];
     isDownloading = true;
