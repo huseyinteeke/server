@@ -252,7 +252,7 @@ function uploadFirmware() {
             const formData = new FormData();
             formData.append("file", file);
             
-            const ESP_IP = "10.126.19.100"; 
+            const ESP_IP = "10.17.15.101"; 
             const targetUrl = `http://${ESP_IP}/upload_firmware`;
             
             console.log("[DEBUG] 8. XHR açılıyor, Hedef:", targetUrl);
