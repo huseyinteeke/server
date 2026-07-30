@@ -2,64 +2,169 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SARA | Command Center</title>
+    <!-- Google Fonts for premium futuristic telemetry look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="/static/js/chart.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div class="gcs-container">
+        <!-- Sidebar -->
         <aside class="sidebar">
-            <h1>SARA GCS</h1>
-            <div id="status-box" class="status-safe">DISARMED</div>
-            
-            <<div class="control-group">
-                <button class="btn btn-arm" onclick="sendCommand('ARM')">ARM</button>
-                <button class="btn btn-disarm" onclick="sendCommand('DISARM')">DISARM</button>
-                <button class="btn btn-reset" onclick="confirmReset()">SYSTEM RESET</button> 
-                <button class="btn btn-log" id="btnDownloadLog" onclick="downloadLogs()">DOWNLOAD OFFLINE LOG</button>
+            <div class="sidebar-header">
+                <div class="pulse-indicator"></div>
+                <h1>SARA GCS</h1>
             </div>
-            <div id="logStatusText" style="color: #ff9800; font-size: 0.8rem; text-align: center; margin-top: 5px; min-height: 15px;"></div>
-            <div class="pid-panel">
-                <h3>PID & SETPOINT</h3>
-                <input type="number" id="sp_pitch" placeholder="Pitch Setpoint">
-                <input type="number" id="kp_pitch" placeholder="Pitch Kp">
-                <input type="number" id="ki_pitch" placeholder="Pitch Ki">
-                <input type="number" id="kd_pitch" placeholder="Pitch Kd">
-                <hr>
-                <input type="number" id="sp_yaw" placeholder="Yaw Setpoint">
-                <input type="number" id="kp_yaw" placeholder="Yaw Kp">
-                <input type="number" id="ki_yaw" placeholder="Yaw Ki">
-                <input type="number" id="kd_yaw" placeholder="Yaw Kd">
-                <button class="btn btn-update" onclick="sendPID()">UPDATE PARAMS</button>
+            
+            <div class="sidebar-section">
+                <div class="section-title">Telemetry Status</div>
+                <div id="status-box" class="status-safe">DISARMED</div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="section-title">Mission Control</div>
+                <div class="control-group">
+                    <button class="btn btn-arm" onclick="sendCommand('ARM')">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        ARM SYSTEM
+                    </button>
+                    <button class="btn btn-disarm" onclick="sendCommand('DISARM')">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M9 17v-8l7 4-7 4z"/></svg>
+                        DISARM
+                    </button>
+                    <button class="btn btn-reset" onclick="confirmReset()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        SYSTEM RESET
+                    </button>
+                    <button class="btn btn-log" id="btnDownloadLog" onclick="downloadLogs()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        DOWNLOAD LOG
+                    </button>
+                </div>
+                <div id="logStatusText" class="log-status"></div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="section-title">PID & Setpoint Tuning</div>
+                <div class="pid-panel">
+                    <div class="pid-subgroup">
+                        <div class="subgroup-title">Pitch / Depth Controller</div>
+                        <div class="input-grid">
+                            <div class="input-wrapper">
+                                <label for="sp_pitch">Setpoint</label>
+                                <input type="number" id="sp_pitch" placeholder="0.0">
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="kp_pitch">Kp</label>
+                                <input type="number" id="kp_pitch" placeholder="0.0">
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="ki_pitch">Ki</label>
+                                <input type="number" id="ki_pitch" placeholder="0.0">
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="kd_pitch">Kd</label>
+                                <input type="number" id="kd_pitch" placeholder="0.0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pid-subgroup">
+                        <div class="subgroup-title">Yaw / Heading Controller</div>
+                        <div class="input-grid">
+                            <div class="input-wrapper">
+                                <label for="sp_yaw">Setpoint</label>
+                                <input type="number" id="sp_yaw" placeholder="0.0">
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="kp_yaw">Kp</label>
+                                <input type="number" id="kp_yaw" placeholder="0.0">
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="ki_yaw">Ki</label>
+                                <input type="number" id="ki_yaw" placeholder="0.0">
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="kd_yaw">Kd</label>
+                                <input type="number" id="kd_yaw" placeholder="0.0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-update" onclick="sendPID()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        UPDATE PID PARAMS
+                    </button>
+                </div>
             </div>
 
-            <div class="fota-panel">
-                <h3>FIRMWARE (FOTA)</h3>
-                <form id="uploadForm" enctype="multipart/form-data">
-                <input type="file" name="file" id="fileInput" accept=".bin" class="file-input">
-                <button type="button" class="btn btn-fota" onclick="uploadFirmware()">FLASH BINARY</button>
-            </form>
-            <div id="uploadProgressContainer" style="display:none; margin-top:10px;">
-                <div style="width:100%; background:#000; border:1px solid #45a29e; height:10px; border-radius:5px;">
-                    <div id="uploadProgressBar" style="width:0%; height:100%; background:#ffc107; transition:0.2s;"></div>
+            <div class="sidebar-section">
+                <div class="section-title">FOTA (Firmware Update)</div>
+                <div class="fota-panel">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="file-upload-wrapper">
+                            <input type="file" name="file" id="fileInput" accept=".bin" class="file-input" onchange="document.querySelector('.file-custom-label').innerText = this.files[0] ? this.files[0].name : 'Select .bin Firmware'">
+                            <span class="file-custom-label">Select .bin Firmware</span>
+                        </div>
+                        <button type="button" class="btn btn-fota" onclick="uploadFirmware()">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            FLASH BINARY
+                        </button>
+                    </form>
+                    <div id="uploadProgressContainer" class="progress-container">
+                        <div class="progress-bar-bg">
+                            <div id="uploadProgressBar" class="progress-bar-fill"></div>
+                        </div>
+                        <span id="uploadStatus" class="progress-status">Reading file...</span>
+                    </div>
                 </div>
-                <small id="uploadStatus" style="font-size:0.7rem; color:#45a29e;"></small>
             </div>
         </aside>
 
-        <main class="charts-grid">
-            <div class="chart-container"><h4>Depth</h4><canvas id="chart_Depth"></canvas></div>
-            <div class="chart-container"><h4>Acc X</h4><canvas id="chart_Ax"></canvas></div>
-            <div class="chart-container"><h4>Acc Y</h4><canvas id="chart_Ay"></canvas></div>
-            <div class="chart-container"><h4>Acc Z</h4><canvas id="chart_Az"></canvas></div>
-            <div class="chart-container"><h4>Pitch</h4><canvas id="chart_pitch"></canvas></div>
-            <div class="chart-container"><h4>Roll</h4><canvas id="chart_roll"></canvas></div>
-            <div class="chart-container"><h4>Yaw</h4><canvas id="chart_yaw"></canvas></div>
-            <div class="chart-container"><h4>Velocity</h4><canvas id="chart_velocity"></canvas></div>
-            <div class="chart-container"><h4>Distance</h4><canvas id="chart_distance"></canvas></div>
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="filterCategory('all', this)">ALL SENSORS</button>
+                    <button class="tab-btn" onclick="filterCategory('nav', this)">NAVIGATION</button>
+                    <button class="tab-btn" onclick="filterCategory('imu', this)">IMU (ACC)</button>
+                    <button class="tab-btn" onclick="filterCategory('vel', this)">VELOCITY</button>
+                    <button class="tab-btn" onclick="filterCategory('pos', this)">POSITION</button>
+                    <button class="tab-btn" onclick="filterCategory('ctrl', this)">CONTROL</button>
+                </div>
+            </header>
+            
+            <div class="charts-grid">
+                <!-- Dynamically populated by script.js -->
+            </div>
         </main>
     </div>
+
+    <!-- Zoom Chart Modal -->
+    <div id="chartModal" class="modal" onclick="if(event.target === this) closeModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-status-dot"></span>
+                    <h3 id="modalTitle">Telemetry</h3>
+                </div>
+                <div class="modal-value-group">
+                    <span id="modalValue" class="modal-live-value">--</span>
+                    <span id="modalUnit" class="modal-unit"></span>
+                </div>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-chart-container">
+                <canvas id="maximizedChartCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/js/script.js"></script>
 </body>
 </html>
