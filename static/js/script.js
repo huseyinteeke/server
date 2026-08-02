@@ -9,18 +9,15 @@ const variables = [
     { key: 'pitch', label: 'Pitch', color: '#ff4b2b', category: 'nav', unit: '°', aliases: ['pitch', 'Pitch', 'PITCH'] },
     { key: 'roll', label: 'Roll', color: '#2af598', category: 'nav', unit: '°', aliases: ['roll', 'Roll', 'ROLL'] },
     { key: 'yaw', label: 'Yaw', color: '#ffd700', category: 'nav', unit: '°', aliases: ['yaw', 'Yaw', 'YAW'] },
-    { key: 'velocity', label: 'Velocity', color: '#bdc3c7', category: 'vel', unit: 'm/s', aliases: ['velocity', 'vel', 'VELOCITY'] },
-    { key: 'distance', label: 'Distance', color: '#a855f7', category: 'nav', unit: 'm', aliases: ['distance', 'dist', 'DISTANCE'] },
-    
     // New variables added by User
     { key: 'rudder_angle', label: 'Rudder Angle', color: '#e11d48', category: 'ctrl', unit: '°', aliases: ['rudderangle', 'rudder_angle', 'rudder angle', 'rudderAngle', 'RudderAngle', 'rudder'] },
     { key: 'stern_angle', label: 'Stern Angle', color: '#f59e0b', category: 'ctrl', unit: '°', aliases: ['sternangle', 'stern_angle', 'stern angle', 'sternAngle', 'SternAngle', 'stern'] },
-    { key: 'vx', label: 'Vx', color: '#3b82f6', category: 'vel', unit: 'm/s', aliases: ['vx', 'v_x', 'velocityx', 'velocity_x', 'Vx'] },
-    { key: 'vy', label: 'Vy', color: '#10b981', category: 'vel', unit: 'm/s', aliases: ['vy', 'v_y', 'velocityy', 'velocity_y', 'Vy'] },
-    { key: 'vz', label: 'Vz', color: '#6366f1', category: 'vel', unit: 'm/s', aliases: ['vz', 'v_z', 'velocityz', 'velocity_z', 'Vz'] },
-    { key: 'dx', label: 'Dx', color: '#ec4899', category: 'pos', unit: 'm', aliases: ['dx', 'd_x', 'distancex', 'distance_x', 'Dx'] },
-    { key: 'dy', label: 'Dy', color: '#14b8a6', category: 'pos', unit: 'm', aliases: ['dy', 'd_y', 'distancey', 'distance_y', 'Dy'] },
-    { key: 'dz', label: 'Dz', color: '#84cc16', category: 'pos', unit: 'm', aliases: ['dz', 'd_z', 'distancez', 'distance_z', 'Dz'] }
+    //{ key: 'vx', label: 'Vx', color: '#3b82f6', category: 'vel', unit: 'm/s', aliases: ['vx', 'v_x', 'velocityx', 'velocity_x', 'Vx'] },
+    //{ key: 'vy', label: 'Vy', color: '#10b981', category: 'vel', unit: 'm/s', aliases: ['vy', 'v_y', 'velocityy', 'velocity_y', 'Vy'] },
+    //{ key: 'vz', label: 'Vz', color: '#6366f1', category: 'vel', unit: 'm/s', aliases: ['vz', 'v_z', 'velocityz', 'velocity_z', 'Vz'] },
+    //{ key: 'dx', label: 'Dx', color: '#ec4899', category: 'pos', unit: 'm', aliases: ['dx', 'd_x', 'distancex', 'distance_x', 'Dx'] },
+    //{ key: 'dy', label: 'Dy', color: '#14b8a6', category: 'pos', unit: 'm', aliases: ['dy', 'd_y', 'distancey', 'distance_y', 'Dy'] },
+    //{ key: 'dz', label: 'Dz', color: '#84cc16', category: 'pos', unit: 'm', aliases: ['dz', 'd_z', 'distancez', 'distance_z', 'Dz'] }
 ];
 
 const charts = {};
@@ -372,7 +369,7 @@ function uploadFirmware() {
             const formData = new FormData();
             formData.append("file", file);
             
-            const ESP_IP = "10.59.94.101"; 
+            const ESP_IP = "10.252.138.101"; 
             const targetUrl = `http://${ESP_IP}/upload_firmware`;
             
             console.log("[DEBUG] XHR posting to:", targetUrl);
