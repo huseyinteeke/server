@@ -20,6 +20,36 @@
             </div>
             
             <div class="sidebar-section">
+                <div class="section-title">Waypoint Sequence</div>
+    <div class="waypoint-panel">
+        <div class="input-grid">
+            <div class="input-wrapper">
+                <label for="wp_action">Action</label>
+                <!-- Mevcut temaya uyması için inline stil eklendi -->
+                <select id="wp_action" style="background: rgba(15, 23, 42, 0.95); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 5px; font-family: 'Share Tech Mono'; border-radius: 4px;">
+                    <option value="MOVE">İlerle (Metre)</option>
+                    <option value="TURN">Dön (Derece)</option>
+                    <option value="DEPTH">Derinliğe İn (Metre)</option>
+                </select>
+            </div>
+            <div class="input-wrapper">
+                <label for="wp_value">Value</label>
+                <input type="number" id="wp_value" placeholder="Örn: 10">
+            </div>
+        </div>
+        
+        <button class="btn btn-update" onclick="addWaypoint()" style="margin-top: 10px;">
+            + KOMUT EKLE
+        </button>
+
+        <!-- Eklenen komutların dinamik listeleneceği alan -->
+        <ul id="waypoint_list" style="list-style: none; padding: 0; margin-top: 15px; color: #8f9cae; font-family: 'Share Tech Mono'; font-size: 13px;">
+        </ul>
+
+        <button class="btn btn-arm" onclick="sendWaypointSequence()" style="margin-top: 10px; width: 100%;">
+            GÖREVİ ESP'YE İLET
+        </button>
+    </div>
                 <div class="section-title">Telemetry Status</div>
                 <div id="status-box" class="status-safe">DISARMED</div>
             </div>

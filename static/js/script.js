@@ -12,10 +12,10 @@ const variables = [
     // New variables added by User
     { key: 'rudder_angle', label: 'Rudder Angle', color: '#e11d48', category: 'ctrl', unit: '°', aliases: ['rudderangle', 'rudder_angle', 'rudder angle', 'rudderAngle', 'RudderAngle', 'rudder'] },
     { key: 'stern_angle', label: 'Stern Angle', color: '#f59e0b', category: 'ctrl', unit: '°', aliases: ['sternangle', 'stern_angle', 'stern angle', 'sternAngle', 'SternAngle', 'stern'] },
-    //{ key: 'vx', label: 'Vx', color: '#3b82f6', category: 'vel', unit: 'm/s', aliases: ['vx', 'v_x', 'velocityx', 'velocity_x', 'Vx'] },
+    { key: 'vx', label: 'Vx', color: '#3b82f6', category: 'vel', unit: 'm/s', aliases: ['vx', 'v_x', 'velocityx', 'velocity_x', 'Vx'] },
     //{ key: 'vy', label: 'Vy', color: '#10b981', category: 'vel', unit: 'm/s', aliases: ['vy', 'v_y', 'velocityy', 'velocity_y', 'Vy'] },
     //{ key: 'vz', label: 'Vz', color: '#6366f1', category: 'vel', unit: 'm/s', aliases: ['vz', 'v_z', 'velocityz', 'velocity_z', 'Vz'] },
-    //{ key: 'dx', label: 'Dx', color: '#ec4899', category: 'pos', unit: 'm', aliases: ['dx', 'd_x', 'distancex', 'distance_x', 'Dx'] },
+    { key: 'dx', label: 'Dx', color: '#ec4899', category: 'pos', unit: 'm', aliases: ['dx', 'd_x', 'distancex', 'distance_x', 'Dx'] },
     //{ key: 'dy', label: 'Dy', color: '#14b8a6', category: 'pos', unit: 'm', aliases: ['dy', 'd_y', 'distancey', 'distance_y', 'Dy'] },
     //{ key: 'dz', label: 'Dz', color: '#84cc16', category: 'pos', unit: 'm', aliases: ['dz', 'd_z', 'distancez', 'distance_z', 'Dz'] }
 ];
@@ -369,7 +369,7 @@ function uploadFirmware() {
             const formData = new FormData();
             formData.append("file", file);
             
-            const ESP_IP = "10.252.138.101"; 
+            const ESP_IP = "10.95.9.101"; 
             const targetUrl = `http://${ESP_IP}/upload_firmware`;
             
             console.log("[DEBUG] XHR posting to:", targetUrl);
@@ -494,4 +494,114 @@ function downloadLogs() {
     isDownloading = true;
     updateLogStatus("Requesting Logs from Device...");
     socket.emit('ui_command', { action: "DOWNLOAD" });
+}
+
+// Waypoint görevlerini hafızada tutacak dizi
+let waypointSequence = [];
+
+// Yeni komut ekleme fonksiyonu (Gelişmiş Debug Logları İçerir)
+function addWaypoint() {
+    console.log("[DEBUG-WP] addWaypoint() tetiklendi.");
+
+    const actionElement = document.getElementById('wp_action');
+    const valueElement = document.getElementById('wp_value');
+
+    if (!actionElement || !valueElement) {
+        console.error("[DEBUG-WP] HATA: HTML elementleri (wp_action veya wp_value) bulunamadı! ID'leri kontrol edin.");
+        return;
+    }
+
+    const action = actionElement.value;
+    const valueStr = valueElement.value;
+    console.log(`[DEBUG-WP] Okunan Ham Değerler -> Action: '${action}', Value: '${valueStr}'`);
+
+    const value = parseFloat(valueStr);
+
+    // Boş veya geçersiz girişleri engelle
+    if (isNaN(value)) {
+        console.warn("[DEBUG-WP] UYARI: Girilen değer bir sayı değil. Ekleme iptal edildi.");
+        alert("Lütfen geçerli bir sayısal değer girin!");
+        return;
+    }
+
+    // Komutu listeye ekle
+    waypointSequence.push({ action: action, value: value });
+    console.log("[DEBUG-WP] Diziye yeni komut eklendi. Güncel dizi:", waypointSequence);
+    
+    // Arayüzü güncelle
+    updateWaypointUI();
+    
+    // İşlem sonrası inputu temizle
+    valueElement.value = '';
+    console.log("[DEBUG-WP] Input kutusu temizlendi, işlem başarılı.");
+}
+
+// Komut silme fonksiyonu (listede komutun yanındaki 'X' tuşuna basıldığında)
+function removeWaypoint(index) {
+    console.log(`[DEBUG-WP] removeWaypoint(${index}) tetiklendi.`);
+    waypointSequence.splice(index, 1);
+    updateWaypointUI();
+}
+
+// Arayüzdeki (HTML) listeyi güncelleyen fonksiyon
+// Arayüzdeki (HTML) listeyi güncelleyen fonksiyon
+function updateWaypointUI() {
+    console.log("[DEBUG-WP] updateWaypointUI() çalışıyor...");
+    const list = document.getElementById('waypoint_list');
+    
+    if (!list) {
+         console.error("[DEBUG-WP] HATA: 'waypoint_list' ID'sine sahip UL elementi bulunamadı!");
+         return;
+    }
+
+    list.innerHTML = ''; // Önce listeyi temizle
+    
+    waypointSequence.forEach((wp, index) => {
+        const li = document.createElement('li');
+        
+        // Eleman tasarımı
+        li.style.display = 'flex';
+        li.style.justifyContent = 'space-between';
+        li.style.background = 'rgba(255,255,255,0.05)';
+        li.style.marginBottom = '5px';
+        li.style.padding = '5px 10px';
+        li.style.borderRadius = '4px';
+
+        // İşlem tipine göre ekranda yazacak metni belirle
+        const actionText = wp.action === 'MOVE' ? 'İlerle' : 
+                           wp.action === 'TURN' ? 'Dön' : 'Derinliğe İn';
+                           
+        // İşlem tipine göre birimi belirle (Dönüş için derece, diğerleri için metre)
+        const unitText = wp.action === 'TURN' ? '°' : 'm'; 
+        
+        li.innerHTML = `
+            <span>${index + 1}. ${actionText}: ${wp.value}${unitText}</span>
+            <button onclick="removeWaypoint(${index})" style="background: transparent; border: none; color: #f43f5e; cursor: pointer; font-weight: bold; font-family: inherit;">X</button>
+        `;
+        list.appendChild(li);
+    });
+    console.log("[DEBUG-WP] UI Listesi başarıyla güncellendi.");
+}
+
+
+// Hazırlanan görev dizisini WebSocket üzerinden sunucuya gönderen fonksiyon
+function sendWaypointSequence() {
+    console.log("[DEBUG-WP] sendWaypointSequence() tetiklendi.");
+    if (waypointSequence.length === 0) {
+        console.warn("[DEBUG-WP] HATA: Dizi boş, ESP'ye gönderim yapılmayacak.");
+        alert("Gönderilecek bir komut bulunamadı! Önce listeye komut ekleyin.");
+        return;
+    }
+
+    // Payload (ESP'ye gidecek JSON formatı)
+    const payload = {
+        action: "WAYPOINT_SEQUENCE",
+        commands: waypointSequence
+    };
+
+    console.log("[DEBUG-WP] ESP'ye gönderilecek Payload hazırlandı:", payload);
+    
+    // ui_command üzerinden veriyi ilet
+    socket.emit('ui_command', payload);
+    console.log("[DEBUG-WP] Payload socket üzerinden 'ui_command' kanalıyla gönderildi.");
 }
