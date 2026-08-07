@@ -569,7 +569,8 @@ function updateWaypointUI() {
 
         // İşlem tipine göre ekranda yazacak metni belirle
         const actionText = wp.action === 'MOVE' ? 'İlerle' : 
-                           wp.action === 'TURN' ? 'Dön' : 'Derinliğe İn';
+                           wp.action === 'TURN' ? 'Dön' : 'Derinliğe İn'
+                           wp.action === 'YUNUSLAMA' ? 'YUNUSLAMA' : 'YUNUSLA';
                            
         // İşlem tipine göre birimi belirle (Dönüş için derece, diğerleri için metre)
         const unitText = wp.action === 'TURN' ? '°' : 'm'; 
