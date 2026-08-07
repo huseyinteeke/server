@@ -567,13 +567,34 @@ function updateWaypointUI() {
         li.style.padding = '5px 10px';
         li.style.borderRadius = '4px';
 
-        // İşlem tipine göre ekranda yazacak metni belirle
-        const actionText = wp.action === 'MOVE' ? 'İlerle' : 
-                           wp.action === 'TURN' ? 'Dön' : 'Derinliğe İn'
-                           wp.action === 'YUNUSLAMA' ? 'YUNUSLAMA' : 'YUNUSLA';
-                           
-        // İşlem tipine göre birimi belirle (Dönüş için derece, diğerleri için metre)
-        const unitText = wp.action === 'TURN' ? '°' : 'm'; 
+        // İşlem tipine göre ekranda yazacak metni ve birimi güvenli şekilde belirleyelim
+        let actionText = '';
+        let unitText = 'm';
+
+        switch (wp.action) {
+            case 'MOVE':
+            case 'GO_TO':
+                actionText = 'İlerle';
+                unitText = 'm';
+                break;
+            case 'TURN':
+                actionText = 'Dön';
+                unitText = '°';
+                break;
+            case 'DEPTH':
+                actionText = 'Derinliğe İn';
+                unitText = 'm';
+                break;
+            case 'YUNUSLAMA':
+            case 'PORPOISING':
+                actionText = 'Yunuslama';
+                unitText = 'm'; // İhtiyacınıza göre 'm' veya '°' yapabilirsiniz
+                break;
+            default:
+                actionText = wp.action;
+                unitText = 'm';
+                break;
+        }
         
         li.innerHTML = `
             <span>${index + 1}. ${actionText}: ${wp.value}${unitText}</span>
