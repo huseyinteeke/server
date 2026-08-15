@@ -18,6 +18,14 @@ const variables = [
     { key: 'dx', label: 'Dx', color: '#ec4899', category: 'pos', unit: 'm', aliases: ['dx', 'd_x', 'distancex', 'distance_x', 'Dx'] },
     //{ key: 'dy', label: 'Dy', color: '#14b8a6', category: 'pos', unit: 'm', aliases: ['dy', 'd_y', 'distancey', 'distance_y', 'Dy'] },
     //{ key: 'dz', label: 'Dz', color: '#84cc16', category: 'pos', unit: 'm', aliases: ['dz', 'd_z', 'distancez', 'distance_z', 'Dz'] }
+    { 
+        key: 'rpm', 
+        label: 'Motor RPM', 
+        color: '#a855f7', // Belirgin mor tonu
+        category: 'engine', 
+        unit: 'RPM', 
+        aliases: ['rpm', 'RPM', 'motor_rpm', 'motorRpm', 'engine_rpm', 'pwm', 'target_pwm'] 
+    }
 ];
 
 const charts = {};
@@ -369,7 +377,7 @@ function uploadFirmware() {
             const formData = new FormData();
             formData.append("file", file);
             
-            const ESP_IP = "10.95.9.101"; 
+            const ESP_IP = "10.143.238.101"; 
             const targetUrl = `http://${ESP_IP}/upload_firmware`;
             
             console.log("[DEBUG] XHR posting to:", targetUrl);
@@ -584,6 +592,10 @@ function updateWaypointUI() {
             case 'DEPTH':
                 actionText = 'Derinliğe İn';
                 unitText = 'm';
+                break;
+            case 'DISARM':
+                actionText = 'Disarm';
+                unitText = 'sn';
                 break;
             case 'YUNUSLAMA':
             case 'PORPOISING':
