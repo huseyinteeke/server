@@ -377,7 +377,7 @@ function uploadFirmware() {
             const formData = new FormData();
             formData.append("file", file);
             
-            const ESP_IP = "10.143.238.101"; 
+            const ESP_IP = "10.142.60.101"; 
             const targetUrl = `http://${ESP_IP}/upload_firmware`;
             
             console.log("[DEBUG] XHR posting to:", targetUrl);
